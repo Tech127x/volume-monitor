@@ -10,19 +10,19 @@ Volume Monitor fixes all of this. It connects your Linux audio system directly t
 
 ## ✨ What Makes This Different?
 
-## 🎯 It Knows What's Playing
+### 🎯 It Knows What's Playing
 Volume Monitor doesn't just control "the volume" -- it sees every app making sound. Brave playing YouTube? That's Knob 2. Spotify in the background? Knob 3. Discord call comes in? Knob 4. Each app gets its own knob, automatically. Close an app and the others shift left to fill the gap. It's like having a dedicated mixing board for your desktop.
 
-## 🔄 Never Get Blasted Again
+### 🔄 Never Get Blasted Again
 New app you've never opened before? It starts at 50% volume -- not 100%. No more panic-reaching for the mute button. Close an app and reopen it later? It remembers exactly where you left it. Firefox always comes back at 32% because that's where you like it. Every app remembers its own level.
 
-## 🎧 Switch Devices Instantly
+### 🎧 Switch Devices Instantly
 Headphones, speakers, HDMI output, Bluetooth earbuds -- Volume Monitor sees them all. Press one button on your Stream Deck (or run one command) and your audio jumps to the next device. Walking away from your desk? One tap switches from speakers to headphones. Desktop notifications confirm every switch so you always know where your audio is going.
 
-## 🐟 Built for CachyOS, Loves All Shells
+### 🐟 Built for CachyOS, Loves All Shells
 First-class Fish shell support with tab completions, handy aliases (vm, vms, vml, vmt), and automatic PATH configuration. But don't worry bash and zsh users -- it all works beautifully for you too. The installer auto-detects your shell and sets everything up.
 
-## ⚡ Real-Time, Always
+### ⚡ Real-Time, Always
 30ms polling means volume changes appear on your Stream Deck instantly. Not "pretty fast" -- instantly. Turn a physical knob on a Stream Deck+ and watch the volume change before your finger leaves the dial.
 
 ---
@@ -156,6 +156,6 @@ Knobs 2-4 -- Per-App (optional):
 
 ## 📝 License
 
-  MIT -- use it, modify it, share it. Just give me some credit!
+  MIT -- use it, modify it, share it... Just give credit!
 
-# Made with ❤️ for the CachyOS community, Bitfocus Companion users, and Stream Deck enthusiasts everywhere!
+## Made with ❤️ for the CachyOS community, Bitfocus Companion users, and Stream Deck enthusiasts everywhere!
