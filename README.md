@@ -2,7 +2,7 @@
 
 Real-time audio volume and device monitoring for BitFocus Companion on Linux systems using PipeWire/PulseAudio.
 
-Designed for CachyOS with first-class Fish shell support.
+Designed for CachyOS with first-class Fish shell support (bash/zsh compatible).
 
 ## Features
 
