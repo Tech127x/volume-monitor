@@ -8,38 +8,39 @@ Volume Monitor fixes all of this. It connects your Linux audio system directly t
 
 ---
 
-✨ What Makes This Different?
+## ✨ What Makes This Different?
 
-🎯 It Knows What's Playing
+## 🎯 It Knows What's Playing
 Volume Monitor doesn't just control "the volume" -- it sees every app making sound. Brave playing YouTube? That's Knob 2. Spotify in the background? Knob 3. Discord call comes in? Knob 4. Each app gets its own knob, automatically. Close an app and the others shift left to fill the gap. It's like having a dedicated mixing board for your desktop.
 
-🔄 Never Get Blasted Again
+## 🔄 Never Get Blasted Again
 New app you've never opened before? It starts at 50% volume -- not 100%. No more panic-reaching for the mute button. Close an app and reopen it later? It remembers exactly where you left it. Firefox always comes back at 32% because that's where you like it. Every app remembers its own level.
 
-🎧 Switch Devices Instantly
+## 🎧 Switch Devices Instantly
 Headphones, speakers, HDMI output, Bluetooth earbuds -- Volume Monitor sees them all. Press one button on your Stream Deck (or run one command) and your audio jumps to the next device. Walking away from your desk? One tap switches from speakers to headphones. Desktop notifications confirm every switch so you always know where your audio is going.
 
-🐟 Built for CachyOS, Loves All Shells
+## 🐟 Built for CachyOS, Loves All Shells
 First-class Fish shell support with tab completions, handy aliases (vm, vms, vml, vmt), and automatic PATH configuration. But don't worry bash and zsh users -- it all works beautifully for you too. The installer auto-detects your shell and sets everything up.
 
-⚡ Real-Time, Always
+## ⚡ Real-Time, Always
 30ms polling means volume changes appear on your Stream Deck instantly. Not "pretty fast" -- instantly. Turn a physical knob on a Stream Deck+ and watch the volume change before your finger leaves the dial.
 
 ---
 
-🚀 Quick Install
+## 🚀 Quick Install
 
 Fish Shell (CachyOS default):
-
+```
   sudo pacman -S python-pipx wireplumber pipewire-pulse libnotify
   pipx ensurepath
   fish_add_path ~/.local/bin
   git clone https://github.com/Tech127x/volume-monitor.git
   cd volume-monitor
   fish install.fish
+```
 
 Bash / Zsh:
-
+```
   sudo pacman -S python-pipx wireplumber pipewire-pulse libnotify
   pipx ensurepath
   echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
@@ -47,12 +48,12 @@ Bash / Zsh:
   git clone https://github.com/Tech127x/volume-monitor.git
   cd volume-monitor
   ./install.sh
-
+```
 That's it. The installer handles everything -- pipx setup, shell configuration, Fish completions, optional systemd service, and walks you through your first configuration.
 
 ---
 
-🎮 Usage -- So Simple You'll Forget It's Running
+## 🎮 Usage -- So Simple You'll Forget It's Running
 
   volume-monitor --start          Start in background
   volume-monitor --status         Check if running
@@ -72,7 +73,7 @@ Fish Shell Aliases:
 
 ---
 
-📋 What You'll See On Your Stream Deck+
+## 📋 What You'll See On Your Stream Deck+
 
 Knob 1 -- Master Volume
 Shows your current audio device name and volume. Turn it to adjust everything. Press to mute/unmute. When you switch audio devices, the name updates automatically and you get a desktop notification.
@@ -92,7 +93,7 @@ Safe defaults: Brand new apps start at 50% volume. Never get startled by a surpr
 
 ---
 
-🔧 Configuration
+## 🔧 Configuration
 
 Run the friendly interactive wizard:
 
@@ -110,7 +111,7 @@ Config is stored at ~/.volume_monitor_config.json
 
 ---
 
-🎛️ Stream Deck+ Variable Setup
+## 🎛️ Stream Deck+ Variable Setup
 
 Create these Custom Variables in Companion:
 
@@ -126,13 +127,13 @@ Knobs 2-4 -- Per-App (optional):
 
 ---
 
-📊 Requirements
+## 📊 Requirements
 
   Python 3.9+, pipx, WirePlumber, pipewire-pulse, libnotify (optional)
 
 ---
 
-🆘 Troubleshooting
+## 🆘 Troubleshooting
 
   No devices: systemctl --user status pipewire
   Companion won't connect: Check TCP API on port 16759
@@ -142,19 +143,19 @@ Knobs 2-4 -- Per-App (optional):
 
 ---
 
-📦 Updating
+## 📦 Updating
 
   cd ~/volume-monitor
   git pull
   pipx install --force --editable .
   volume-monitor --start
 
-🗑️ Uninstall
+## 🗑️ Uninstall
 
   fish uninstall.fish
 
-📝 License
+## 📝 License
 
   MIT -- use it, modify it, share it. Just give me some credit!
 
-Made with ❤️ for the CachyOS community, Bitfocus Companion users, and Stream Deck enthusiasts everywhere!
+# Made with ❤️ for the CachyOS community, Bitfocus Companion users, and Stream Deck enthusiasts everywhere!
