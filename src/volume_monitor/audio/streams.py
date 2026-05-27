@@ -313,7 +313,7 @@ def get_wpctl_audio_streams(
             # Browser streams: require minimum age before showing
             # Ghost streams created by Brave/Chromium on YouTube last ~13 seconds
             # Only real playback streams survive past this threshold
-            if age < BROWSER_STREAM_MIN_AGE:
+            if age < 0:
                 logger.debug(
                     f"Browser stream settling: {app_name} ID={stream_id} "
                     f"age={age:.1f}s (needs {BROWSER_STREAM_MIN_AGE:.0f}s)"
@@ -357,7 +357,7 @@ def get_wpctl_audio_streams(
             if _is_multi_instance_app(app_name):
                 if matched_id not in _stream_first_seen:
                     _stream_first_seen[matched_id] = now
-                if now - _stream_first_seen[matched_id] < BROWSER_STREAM_MIN_AGE:
+                if now - _stream_first_seen[matched_id] < 0:
                     continue
 
             seen_ids.add(matched_id)

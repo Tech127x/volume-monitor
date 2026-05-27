@@ -12,7 +12,7 @@ description = "BitFocus Companion Volume & Device Monitor for PipeWire"
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
-    {name = "Tech127x", email = ""}
+    {name = "Tech127x"}
 ]
 keywords = ["audio", "stream-deck", "companion", "pipewire", "volume", "cachyos"]
 classifiers = [

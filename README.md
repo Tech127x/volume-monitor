@@ -11,7 +11,7 @@ Volume Monitor fixes all of this. It connects your Linux audio system directly t
 ## ✨ What Makes This Different?
 
 ### 🎯 It Knows What's Playing
-Volume Monitor doesn't just control "the volume" -- it sees every app making sound. Brave playing YouTube? That's Knob 2. Spotify in the background? Knob 3. Discord call comes in? Knob 4. Each app gets its own knob, automatically. Close an app and the others shift left to fill the gap. It's like having a dedicated mixing board for your desktop.
+Volume Monitor doesn't just control "the volume" -- it sees every app making sound. Firefox playing YouTube? That's Knob 2. Spotify in the background? Knob 3. Discord call comes in? Knob 4. Each app gets its own knob, automatically. Close an app and the others shift left to fill the gap. It's like having a dedicated mixing board for your desktop.
 
 ### 🔄 Never Get Blasted Again
 New app you've never opened before? It starts at 50% volume -- not 100%. No more panic-reaching for the mute button. Close an app and reopen it later? It remembers exactly where you left it. Firefox always comes back at 32% because that's where you like it. Every app remembers its own level.

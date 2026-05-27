@@ -43,7 +43,7 @@ DEFAULT_CONFIG = {
 # Browser ghost stream suppression (seconds)
 # Ghost streams created by Brave/Chromium on YouTube last ~13 seconds
 # Real playback streams persist indefinitely
-BROWSER_STREAM_MIN_AGE = 10.0  # Minimum age before a browser stream is shown
+BROWSER_STREAM_MIN_AGE = 0  # Minimum age before a browser stream is shown
 
 # Stream Deck+ knob layout
 KNOB_MASTER = 1
