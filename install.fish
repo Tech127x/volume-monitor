@@ -1,6 +1,7 @@
 #!/usr/bin/env fish
 # Volume Monitor Installation Script (Fish Shell)
 # Installs via pipx for easy management
+# 
 
 # Colors for output
 set -l RED (set_color red)
