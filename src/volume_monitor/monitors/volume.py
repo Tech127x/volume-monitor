@@ -1,14 +1,15 @@
 """Volume monitor for default audio sink."""
+
 import logging
-import threading
 import time
 from typing import Optional
 
 from ..audio.pipewire import (
-    get_default_sink_state,
     clamp_volume_percent,
+    get_default_sink_state,
 )
 from ..companion.client import CompanionTCPClient
+from ..monitors.base import BaseMonitor
 from ..utils.normalization import norm_device_name
 from ..utils.notifications import send_notification
 from ..utils.threading_utils import start_daemon_thread
@@ -16,7 +17,7 @@ from ..utils.threading_utils import start_daemon_thread
 logger = logging.getLogger(__name__)
 
 
-class VolumeMonitor:
+class VolumeMonitor(BaseMonitor):
     """Monitors default sink volume and device changes."""
 
     def __init__(
@@ -29,16 +30,13 @@ class VolumeMonitor:
         notify_sound: str = "",
         poll_interval: float = 0.03,
     ):
-        self.client = client
+        super().__init__(client)
         self.volume_var = volume_var
         self.mute_var = mute_var
         self.device_var = device_var
         self.notify_enabled = notify_enabled
         self.notify_sound = notify_sound
         self.poll_interval = poll_interval
-
-        self._running = threading.Event()
-        self._lock = threading.Lock()
 
         # State tracking
         self._last_vol: int = -1
@@ -69,18 +67,20 @@ class VolumeMonitor:
             if vol is None:
                 return
 
-            self.client.update_variable(self.volume_var, str(vol))
-            self._last_vol = vol
+            if vol != self._last_vol:
+                _ = self.client.update_variable(self.volume_var, str(vol))
+                self._last_vol = vol
 
-            self.client.update_variable(self.mute_var, "true" if muted else "false")
-            self._last_muted = muted
+            if muted != self._last_muted:
+                _ = self.client.update_variable(self.mute_var, "true" if muted else "false")
+                self._last_muted = muted
 
             if self._last_dev != friendly:
-                self.client.update_variable(self.device_var, f'"{friendly}"')
+                _ = self.client.update_variable(self.device_var, f'"{friendly}"')
                 self._last_dev = friendly
 
                 if self.notify_enabled and friendly != "Unknown":
-                    send_notification(
+                    _ = send_notification(
                         "🔊 Audio Output Switched",
                         f"Changed to: {friendly}",
                         self.notify_sound,
@@ -106,12 +106,15 @@ class VolumeMonitor:
         while self._running.is_set():
             try:
                 dev, muted, vol = get_default_sink_state()
-                if dev and vol is not None:
-                    if dev != last_dev or vol != last_vol or muted != last_muted:
-                        self.update_companion(vol, muted, dev)
-                        last_dev = dev
-                        last_muted = muted
-                        last_vol = vol
+                if (
+                    dev
+                    and vol is not None
+                    and (dev != last_dev or vol != last_vol or muted != last_muted)
+                ):
+                    self.update_companion(vol, muted, dev)
+                    last_dev = dev
+                    last_muted = muted
+                    last_vol = vol
                 time.sleep(self.poll_interval)
             except Exception as e:
                 logger.error(f"Polling error: {e}")
@@ -120,10 +123,10 @@ class VolumeMonitor:
     def start(self) -> None:
         logger.info("Starting audio monitor (polling mode)...")
         self._running.set()
-        start_daemon_thread(self._poll_loop, "volume-poll")
+        _ = start_daemon_thread(self._poll_loop, "volume-poll")
         if not self.push_initial_state():
             logger.warning("Initial state read failed — continuing in degraded mode")
 
     def stop(self) -> None:
-        self._running.clear()
+        super().stop()
         logger.info("Stopped VolumeMonitor")

@@ -51,7 +51,7 @@ test = [
 
 [project.scripts]
 volume-monitor = "volume_monitor.cli:main"
-volume-monitor-config = "volume_monitor.config:interactive_config_cli"
+volume-monitor-config = "volume_monitor.cli_utils:interactive_configure"
 
 [project.urls]
 Homepage = "https://github.com/Tech127x/volume-monitor"
@@ -67,6 +67,7 @@ target-version = ['py39']
 
 [tool.ruff]
 line-length = 100
+src = ["src"]
 select = ["E", "F", "I", "N", "W", "UP", "B", "SIM"]
 ignore = ["E501"]
 

@@ -1,42 +1,40 @@
 """PipeWire audio stream management."""
+
 import logging
 import re
 import subprocess
 import time
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 
+# typing imports replaced with builtins (PEP 585)
 from ..constants import (
-    WPCTL_STREAM_LINE_RE,
-    INSPECT_PROP_RE,
+    BROWSER_STREAM_MIN_AGE,
     DEFAULT_CONFIG,
+    DEFAULT_NEW_APP_VOLUME,
+    INSPECT_PROP_RE,
     KNOB_APP_FIRST,
     KNOB_APP_LAST,
-    STEAM_LAUNCHER_BINARIES,
-    STREAM_DEDUP_WINDOW,
-    DEFAULT_NEW_APP_VOLUME,
-    STREAM_VOLUME_RESTORE_HIGH,
     MULTI_INSTANCE_APPS,
-    BROWSER_STREAM_MIN_AGE,
+    STEAM_LAUNCHER_BINARIES,
+    STREAM_VOLUME_RESTORE_HIGH,
+    WPCTL_STREAM_LINE_RE,
 )
 from ..utils.normalization import (
+    is_excluded_app,
     normalize_name,
     prettify_game_name,
-    disambiguate_label,
-    is_excluded_app,
-)
-from .pipewire import (
-    get_stream_volume_retry,
-    set_stream_volume_percent,
-    ensure_stream_volume_percent,
-    clamp_volume_percent,
 )
 from .pactl import parse_pactl_sink_inputs
+from .pipewire import (
+    clamp_volume_percent,
+    ensure_stream_volume_percent,
+    get_stream_volume_retry,
+)
 from .volume_cache import (
-    load_app_volume_cache,
-    save_app_volume_cache,
     app_volume_cache_key,
     get_persisted_volume_for_props,
+    load_app_volume_cache,
+    save_app_volume_cache,
 )
 
 logger = logging.getLogger(__name__)
@@ -45,7 +43,7 @@ logger = logging.getLogger(__name__)
 EARLY_RESTORED_STREAM_IDS: set[str] = set()
 
 # Track stream appearance times for deduplication
-_stream_first_seen: Dict[str, float] = {}
+_stream_first_seen: dict[str, float] = {}
 
 
 def _is_wpctl_stream_child_line(line: str) -> bool:
@@ -53,9 +51,9 @@ def _is_wpctl_stream_child_line(line: str) -> bool:
     return "output_" in line or " > " in line or "[1.6." in line
 
 
-def _parse_wpctl_status_stream_ids(status_text: str) -> List[Tuple[str, str]]:
+def _parse_wpctl_status_stream_ids(status_text: str) -> list[tuple[str, str]]:
     """Parse stream IDs and names from wpctl status output."""
-    found: List[Tuple[str, str]] = []
+    found: list[tuple[str, str]] = []
     in_audio = False
     in_streams = False
 
@@ -91,9 +89,9 @@ def _parse_wpctl_status_stream_ids(status_text: str) -> List[Tuple[str, str]]:
     return found
 
 
-def parse_wpctl_inspect(stream_id: str) -> Dict[str, str]:
+def parse_wpctl_inspect(stream_id: str) -> dict[str, str]:
     """Parse wpctl inspect output for stream properties."""
-    props: Dict[str, str] = {}
+    props: dict[str, str] = {}
 
     try:
         res = subprocess.run(
@@ -115,7 +113,7 @@ def parse_wpctl_inspect(stream_id: str) -> Dict[str, str]:
     return props
 
 
-def stream_display_name(stream_id: str, props: Dict[str, str], wpctl_name: str) -> str:
+def stream_display_name(stream_id: str, props: dict[str, str], wpctl_name: str) -> str:
     """Generate a human-readable display name for a stream."""
     app_name = props.get("application.name", "").strip()
     binary = props.get("application.process.binary", "").strip()
@@ -147,7 +145,7 @@ def _is_multi_instance_app(app_name: str) -> bool:
     return any(browser in app_lower for browser in MULTI_INSTANCE_APPS)
 
 
-def stream_dedupe_key(stream_id: str, props: dict) -> str:
+def stream_dedupe_key(stream_id: str, props: dict[str, str]) -> str:
     """Create a unique key for stream deduplication.
 
     For multi-instance apps (browsers), use the actual stream ID to ensure
@@ -164,12 +162,14 @@ def stream_dedupe_key(stream_id: str, props: dict) -> str:
 def _build_stream_entry(
     stream_id: str,
     wpctl_name: str,
-    props: dict,
-    exclude_apps: Optional[List[str]] = None,
-    pactl_id: Optional[str] = None,
-) -> dict:
+    props: dict[str, str],
+    exclude_apps: list[str] | None = None,
+    pactl_id: str | None = None,
+) -> dict[str, object]:
     """Build a stream entry dictionary with volume and metadata."""
-    exclude_apps = exclude_apps or DEFAULT_CONFIG["exclude_apps"]
+    exclude_apps_list = DEFAULT_CONFIG["exclude_apps"]
+    assert isinstance(exclude_apps_list, list)
+    exclude_apps = exclude_apps or exclude_apps_list
 
     app_name = props.get("application.name", wpctl_name)
 
@@ -198,9 +198,10 @@ def _build_stream_entry(
     }
 
 
-def _apply_default_volume_for_new_app(stream_id: str, props: dict) -> None:
+def _apply_default_volume_for_new_app(stream_id: str, props: dict[str, str]) -> None:
     """Apply a safe default volume for apps never seen before."""
-    app_key = app_volume_cache_key({"props": props})
+    _cache_stream: dict[str, object] = {"props": props}
+    app_key = app_volume_cache_key(_cache_stream)
     if not app_key:
         return
 
@@ -208,26 +209,29 @@ def _apply_default_volume_for_new_app(stream_id: str, props: dict) -> None:
 
     if app_key not in cache:
         default_vol = DEFAULT_CONFIG.get("default_new_app_volume", DEFAULT_NEW_APP_VOLUME)
+        assert isinstance(default_vol, int)
         logger.info(
             f"New app detected: {props.get('application.name', 'Unknown')} - "
-            f"setting default volume to {default_vol}%"
+            + f"setting default volume to {default_vol}%"
         )
-        ensure_stream_volume_percent(stream_id, default_vol, attempts=4)
+        _ = ensure_stream_volume_percent(stream_id, default_vol, attempts=4)
         cache[app_key] = default_vol
         save_app_volume_cache(cache)
 
 
 def _apply_persisted_volume_on_stream_create(
     stream_id: str,
-    props: dict,
-    pactl_id: Optional[str] = None,
-    exclude_apps: Optional[List[str]] = None,
-) -> Optional[int]:
+    props: dict[str, str],
+    pactl_id: str | None = None,
+    exclude_apps: list[str] | None = None,
+) -> int | None:
     """Apply saved volume level when a new stream is created."""
-    from .pipewire import ensure_stream_volume_percent
     from .pactl import set_pactl_sink_input_volume_percent
+    from .pipewire import ensure_stream_volume_percent
 
-    exclude_apps = exclude_apps or DEFAULT_CONFIG["exclude_apps"]
+    exclude_apps_list = DEFAULT_CONFIG["exclude_apps"]
+    assert isinstance(exclude_apps_list, list)
+    exclude_apps = exclude_apps or exclude_apps_list
 
     app_name = props.get("application.name", "")
     if not app_name or is_excluded_app(app_name, exclude_apps):
@@ -236,20 +240,21 @@ def _apply_persisted_volume_on_stream_create(
     if stream_id in EARLY_RESTORED_STREAM_IDS:
         return None
 
-    cached = get_persisted_volume_for_props(props)
+    _cache_props: dict[str, object] = dict(props)
+    cached = get_persisted_volume_for_props(_cache_props)
     if cached is None:
         return None
 
     if cached < STREAM_VOLUME_RESTORE_HIGH:
         if pactl_id:
-            set_pactl_sink_input_volume_percent(pactl_id, cached)
+            _ = set_pactl_sink_input_volume_percent(pactl_id, cached)
 
         vol = ensure_stream_volume_percent(stream_id, cached, attempts=6)
         EARLY_RESTORED_STREAM_IDS.add(stream_id)
 
         logger.info(
             f"Restored volume for {app_name}: -> {vol}% "
-            f"(wpctl {stream_id}, pactl {pactl_id or '-'})"
+            + f"(wpctl {stream_id}, pactl {pactl_id or '-'})"
         )
 
         return vol
@@ -257,9 +262,7 @@ def _apply_persisted_volume_on_stream_create(
     return None
 
 
-def get_wpctl_audio_streams(
-    exclude_apps: Optional[List[str]] = None
-) -> List[dict]:
+def get_wpctl_audio_streams(exclude_apps: list[str] | None = None) -> list[dict[str, object]]:
     """Get all open PipeWire playback streams.
 
     For multi-instance apps (browsers):
@@ -267,8 +270,10 @@ def get_wpctl_audio_streams(
     - This filters out temporary ghost streams (~13s lifetime) created by Brave/Chromium
     - Real persistent streams are shown after the settling period
     """
-    exclude_apps = exclude_apps or DEFAULT_CONFIG["exclude_apps"]
-    streams: List[dict] = []
+    exclude_apps_list = DEFAULT_CONFIG["exclude_apps"]
+    assert isinstance(exclude_apps_list, list)
+    exclude_apps = exclude_apps or exclude_apps_list
+    streams: list[dict[str, object]] = []
     seen_ids: set[str] = set()
 
     # Get wpctl status
@@ -285,7 +290,7 @@ def get_wpctl_audio_streams(
         status = ""
 
     # Parse streams from status
-    candidates: List[Tuple[str, str, dict]] = []
+    candidates: list[tuple[str, str, dict[str, str]]] = []
     for stream_id, wpctl_name in _parse_wpctl_status_stream_ids(status):
         props = parse_wpctl_inspect(stream_id)
 
@@ -316,7 +321,7 @@ def get_wpctl_audio_streams(
             if age < 0:
                 logger.debug(
                     f"Browser stream settling: {app_name} ID={stream_id} "
-                    f"age={age:.1f}s (needs {BROWSER_STREAM_MIN_AGE:.0f}s)"
+                    + f"age={age:.1f}s (needs {BROWSER_STREAM_MIN_AGE:.0f}s)"
                 )
                 continue
 
@@ -328,7 +333,7 @@ def get_wpctl_audio_streams(
     current_ids = {c[0] for c in candidates}
     expired = [k for k in _stream_first_seen if k not in current_ids]
     for k in expired:
-        _stream_first_seen.pop(k, None)
+        _ = _stream_first_seen.pop(k, None)
 
     # pactl fallback
     wpctl_ids = {s["id"] for s in streams}
@@ -336,13 +341,15 @@ def get_wpctl_audio_streams(
     status_ids = _parse_wpctl_status_stream_ids(status)
 
     for entry in pactl_inputs:
-        props = entry["props"]
-        app_name = props.get("application.name", "")
+        props_val = entry["props"]
+        assert isinstance(props_val, dict)
+        pactl_props: dict[str, str] = props_val
+        app_name = pactl_props.get("application.name", "")
         if not app_name or is_excluded_app(app_name, exclude_apps):
             continue
-        pid = props.get("application.process.id", "")
+        pid = pactl_props.get("application.process.id", "")
         matched_id = None
-        for stream_id, wpctl_name in status_ids:
+        for stream_id, _wpctl_name in status_ids:
             if stream_id in wpctl_ids:
                 continue
             insp = parse_wpctl_inspect(stream_id)
@@ -362,11 +369,10 @@ def get_wpctl_audio_streams(
 
             seen_ids.add(matched_id)
             insp = parse_wpctl_inspect(matched_id)
+            pactl_id_val = entry.get("pactl_id")
+            pactl_id_str: str | None = pactl_id_val if isinstance(pactl_id_val, str) else None
             streams.append(
-                _build_stream_entry(
-                    matched_id, app_name, insp, exclude_apps,
-                    pactl_id=entry.get("pactl_id")
-                )
+                _build_stream_entry(matched_id, app_name, insp, exclude_apps, pactl_id=pactl_id_str)
             )
             wpctl_ids.add(matched_id)
 
@@ -375,14 +381,14 @@ def get_wpctl_audio_streams(
 
 
 def assign_knob_slots(
-    active_streams: List[dict],
-    slot_by_key: Dict[str, int],
+    active_streams: list[dict[str, object]],
+    slot_by_key: dict[str, int],
     first_slot: int = KNOB_APP_FIRST,
     last_slot: int = KNOB_APP_LAST,
     compact: bool = True,
-) -> Dict[int, Optional[dict]]:
+) -> dict[int, dict[str, object] | None]:
     """Assign streams to knob slots stably by dedupe_key."""
-    active_keys = {s["dedupe_key"] for s in active_streams}
+    active_keys = {str(s["dedupe_key"]) for s in active_streams}
 
     # Remove dead slots
     for key, slot in list(slot_by_key.items()):
@@ -390,11 +396,11 @@ def assign_knob_slots(
             del slot_by_key[key]
 
     used_slots = set(slot_by_key.values())
-    stream_by_key = {s["dedupe_key"]: s for s in active_streams}
+    stream_by_key: dict[str, dict[str, object]] = {str(s["dedupe_key"]): s for s in active_streams}
 
     # Assign new streams to free slots
     for stream in active_streams:
-        key = stream["dedupe_key"]
+        key = str(stream["dedupe_key"])
         if key not in slot_by_key:
             free = [i for i in range(first_slot, last_slot + 1) if i not in used_slots]
             if not free:
@@ -403,7 +409,7 @@ def assign_knob_slots(
             slot_by_key[key] = slot
             used_slots.add(slot)
 
-    slots = {i: None for i in range(first_slot, last_slot + 1)}
+    slots: dict[int, dict[str, object] | None] = {i: None for i in range(first_slot, last_slot + 1)}
     for key, slot_idx in slot_by_key.items():
         if first_slot <= slot_idx <= last_slot and key in stream_by_key:
             slots[slot_idx] = stream_by_key[key]
@@ -415,16 +421,14 @@ def assign_knob_slots(
 
 
 def _compact_slots(
-    slots: Dict[int, Optional[dict]],
-    slot_by_key: Dict[str, int],
+    slots: dict[int, dict[str, object] | None],
+    slot_by_key: dict[str, int],
     first_slot: int,
     last_slot: int,
-    stream_by_key: Dict[str, dict],
-) -> Dict[int, Optional[dict]]:
+    stream_by_key: dict[str, dict[str, object]],
+) -> dict[int, dict[str, object] | None]:
     """Shift streams left to fill gaps in knob assignments."""
-    occupied = sorted(
-        [s for s in range(first_slot, last_slot + 1) if slots.get(s) is not None]
-    )
+    occupied = sorted([s for s in range(first_slot, last_slot + 1) if slots.get(s) is not None])
 
     if not occupied:
         return slots
@@ -433,7 +437,9 @@ def _compact_slots(
     if occupied == expected:
         return slots
 
-    new_slots = {i: None for i in range(first_slot, last_slot + 1)}
+    new_slots: dict[int, dict[str, object] | None] = {
+        i: None for i in range(first_slot, last_slot + 1)
+    }
     new_slot_by_key = {}
 
     target_slot = first_slot
@@ -444,14 +450,14 @@ def _compact_slots(
 
         new_slots[target_slot] = stream
 
-        key = stream.get("dedupe_key")
-        if key:
-            new_slot_by_key[key] = target_slot
+        key_val = stream.get("dedupe_key")
+        if key_val:
+            new_slot_by_key[str(key_val)] = target_slot
 
         if old_slot != target_slot:
             logger.info(
                 f"Compacting: {stream.get('display_name', 'Unknown')} "
-                f"moved from knob {old_slot} to knob {target_slot}"
+                + f"moved from knob {old_slot} to knob {target_slot}"
             )
 
         target_slot += 1

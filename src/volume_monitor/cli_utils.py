@@ -1,31 +1,25 @@
 """CLI utility functions for device listing, configuration, etc."""
+
 import fnmatch
 import logging
-import os
 import sys
-import time
-from pathlib import Path
-from typing import List
+from collections.abc import Callable
+from typing import cast
 
-from .config import MonitorConfig, CONFIG_FILE
 from .audio.devices import (
     get_available_audio_devices,
     get_current_sink_id,
-    filter_devices,
     toggle_audio_device,
 )
-from .audio.streams import get_wpctl_audio_streams, assign_knob_slots
-from .audio.pipewire import (
-    get_default_sink_state,
-    get_stream_volume_retry,
-    clamp_volume_percent,
-)
+from .audio.pipewire import get_default_sink_state, get_stream_volume_retry
+from .audio.streams import assign_knob_slots, get_wpctl_audio_streams
+from .config import MonitorConfig
 from .constants import (
-    KNOB_MASTER,
+    CONFIG_FILE,
+    DEFAULT_SINK_TARGET,
     KNOB_APP_FIRST,
     KNOB_APP_LAST,
-    DEFAULT_SINK_TARGET,
-    DEFAULT_CONFIG,
+    KNOB_MASTER,
 )
 from .utils.normalization import norm_device_name
 
@@ -33,6 +27,7 @@ logger = logging.getLogger(__name__)
 
 
 # ─── Helper Functions ────────────────────────────────────────────────
+
 
 def _print_header(title: str) -> None:
     """Print a formatted section header."""
@@ -43,19 +38,13 @@ def _print_header(title: str) -> None:
     print()
 
 
-def _print_step(step_num: int, total: int, title: str) -> None:
-    """Print a step indicator."""
-    print(f"\n  [{step_num}/{total}] {title}")
-    print(f"  {'─' * (len(title) + 5)}")
-
-
 def _confirm(prompt: str, default: bool = True) -> bool:
     """Ask a yes/no question."""
     default_str = "Y/n" if default else "y/N"
     response = input(f"  {prompt} [{default_str}]: ").strip().lower()
     if not response:
         return default
-    return response in ('y', 'yes')
+    return response in ("y", "yes")
 
 
 def _input_with_default(prompt: str, default: str) -> str:
@@ -65,6 +54,7 @@ def _input_with_default(prompt: str, default: str) -> str:
 
 
 # ─── Companion Variable Helpers ───────────────────────────────────────
+
 
 def _print_companion_setup_guide(enable_app_knobs: bool) -> None:
     """Print clear instructions for Companion variable setup."""
@@ -116,13 +106,16 @@ def _print_companion_setup_guide(enable_app_knobs: bool) -> None:
     print("  Stream Deck+ knobs in Companion's Button layout.")
     print()
 
-    if not _confirm("Press Enter when you've set up these variables (or skip if already done)", default=True):
+    if not _confirm(
+        "Press Enter when you've set up these variables (or skip if already done)", default=True
+    ):
         print("\n  You can set up Companion variables later.")
         print("  Run 'volume-monitor --configure' again to see this guide.")
     print()
 
 
 # ─── Bluetooth Reminder ──────────────────────────────────────────────
+
 
 def _bluetooth_reminder() -> None:
     """Remind user to connect bluetooth devices before scanning."""
@@ -141,7 +134,7 @@ def _bluetooth_reminder() -> None:
 """)
 
     try:
-        input("\n  Press Enter when all devices are connected and ready...")
+        _ = input("\n  Press Enter when all devices are connected and ready...")
     except KeyboardInterrupt:
         print("\n\n  Configuration cancelled.")
         print("  Connect your devices and run 'volume-monitor --configure' again.")
@@ -151,6 +144,7 @@ def _bluetooth_reminder() -> None:
 
 
 # ─── Toggle Device Selection ─────────────────────────────────────────
+
 
 def _configure_toggle_devices(config: MonitorConfig) -> None:
     """Simple, clear toggle device configuration."""
@@ -196,21 +190,21 @@ def _configure_toggle_devices(config: MonitorConfig) -> None:
         # Show devices
         print(f"\n  Found {len(devices)} audio device(s):\n")
         for i, device in enumerate(devices, 1):
-            marker = " ← CURRENT" if device['id'] == current_sink else ""
+            marker = " ← CURRENT" if device["id"] == current_sink else ""
             print(f"    {i}. {device['name']}{marker}")
 
-        print(f"\n  Enter the numbers of devices to INCLUDE")
-        print(f"  (comma-separated, e.g.: 1,3)\n")
+        print("\n  Enter the numbers of devices to INCLUDE")
+        print("  (comma-separated, e.g.: 1,3)\n")
         selected = input("  Include devices: ").strip()
 
         if selected:
-            patterns = []
-            for item in selected.split(','):
+            patterns: list[str] = []
+            for item in selected.split(","):
                 item = item.strip()
                 if item.isdigit():
                     idx = int(item) - 1
                     if 0 <= idx < len(devices):
-                        name = devices[idx]['name']
+                        name = devices[idx]["name"]
                         patterns.append(f"{name.split()[0]}*")
                         print(f"    ✓ {devices[idx]['name']}")
 
@@ -227,21 +221,21 @@ def _configure_toggle_devices(config: MonitorConfig) -> None:
         # Show devices
         print(f"\n  Found {len(devices)} audio device(s):\n")
         for i, device in enumerate(devices, 1):
-            marker = " ← CURRENT" if device['id'] == current_sink else ""
+            marker = " ← CURRENT" if device["id"] == current_sink else ""
             print(f"    {i}. {device['name']}{marker}")
 
-        print(f"\n  Enter the numbers of devices to EXCLUDE")
-        print(f"  (comma-separated, e.g.: 2)\n")
+        print("\n  Enter the numbers of devices to EXCLUDE")
+        print("  (comma-separated, e.g.: 2)\n")
         selected = input("  Exclude devices: ").strip()
 
         if selected:
             patterns = []
-            for item in selected.split(','):
+            for item in selected.split(","):
                 item = item.strip()
                 if item.isdigit():
                     idx = int(item) - 1
                     if 0 <= idx < len(devices):
-                        name = devices[idx]['name']
+                        name = devices[idx]["name"]
                         patterns.append(f"{name.split()[0]}*")
                         print(f"    ✗ {devices[idx]['name']}")
 
@@ -249,7 +243,9 @@ def _configure_toggle_devices(config: MonitorConfig) -> None:
                 config.toggle_devices = []
                 config.exclude_devices = patterns
                 remaining = len(devices) - len(patterns)
-                print(f"\n  ✓ {len(patterns)} device(s) excluded. {remaining} device(s) remain in toggle cycle.")
+                print(
+                    f"\n  ✓ {len(patterns)} device(s) excluded. {remaining} device(s) remain in toggle cycle."
+                )
             else:
                 print("\n  ⚠️  No valid devices selected. Using all devices.")
                 config.toggle_devices = []
@@ -257,6 +253,7 @@ def _configure_toggle_devices(config: MonitorConfig) -> None:
 
 
 # ─── App Knob Configuration ──────────────────────────────────────────
+
 
 def _configure_app_knobs(config: MonitorConfig) -> None:
     """Configure per-app volume knobs with clear Companion setup instructions."""
@@ -315,7 +312,7 @@ def _configure_app_knobs(config: MonitorConfig) -> None:
 
     if _confirm("\n  Edit the exclusion list?", default=False):
         print("\n  Enter app names to exclude (one per line, empty to finish):")
-        new_excludes = []
+        new_excludes: list[str] = []
         while True:
             app = input("    > ").strip()
             if not app:
@@ -334,8 +331,14 @@ def _configure_app_knobs(config: MonitorConfig) -> None:
 
 # ─── Main Configuration Wizard ───────────────────────────────────────
 
-def interactive_configure():
-    """Interactive configuration wizard with clear, simple flow."""
+
+def interactive_configure(start_callback: Callable[[MonitorConfig], None] | None = None):
+    """Interactive configuration wizard with clear, simple flow.
+
+    Args:
+        start_callback: Optional callable accepting a MonitorConfig to start
+                        the monitor. When None, instructions are printed instead.
+    """
     config = MonitorConfig.load_or_default()
 
     print()
@@ -358,10 +361,10 @@ def interactive_configure():
     current_ip = config.companion_ip
     current_port = config.companion_port
 
-    print(f"  Volume Monitor connects to BitFocus Companion")
-    print(f"  to send volume data to your Stream Deck.")
+    print("  Volume Monitor connects to BitFocus Companion")
+    print("  to send volume data to your Stream Deck.")
     print()
-    print(f"  Current settings:")
+    print("  Current settings:")
     print(f"    IP Address: {current_ip}")
     print(f"    TCP Port:   {current_port}")
     print()
@@ -380,8 +383,8 @@ def interactive_configure():
 
     # Step 3: Variable names (simplified - most users don't need to change)
     _print_header("📝 Companion Variable Names")
-    print(f"  Volume Monitor uses these variable names in Companion.")
-    print(f"  Most users can keep the defaults.\n")
+    print("  Volume Monitor uses these variable names in Companion.")
+    print("  Most users can keep the defaults.\n")
     print(f"    Volume variable:  {config.volume_var}")
     print(f"    Mute variable:    {config.mute_var}")
     print(f"    Device variable:  {config.device_var}")
@@ -395,8 +398,8 @@ def interactive_configure():
     _print_header("🔔 Notifications")
 
     notify_current = "ON" if config.notify_on_switch else "OFF"
-    print(f"  Volume Monitor can show a desktop notification")
-    print(f"  when the audio output device changes.")
+    print("  Volume Monitor can show a desktop notification")
+    print("  when the audio output device changes.")
     print(f"\n  Currently: {notify_current}")
 
     if _confirm("Show notifications on device switch?", default=config.notify_on_switch):
@@ -413,9 +416,10 @@ def interactive_configure():
     _configure_app_knobs(config)
 
     # Step 7: Companion setup guide (if app knobs disabled, still show master knob)
-    if not config.enable_app_knobs:
-        if _confirm("\n  Show Companion variable setup guide for master volume?", default=True):
-            _print_companion_setup_guide(enable_app_knobs=False)
+    if not config.enable_app_knobs and _confirm(
+        "\n  Show Companion variable setup guide for master volume?", default=True
+    ):
+        _print_companion_setup_guide(enable_app_knobs=False)
 
     # Step 8: Save
     _print_header("💾 Save Configuration")
@@ -431,28 +435,24 @@ def interactive_configure():
     _print_header("📋 Configuration Summary")
     print(f"  Companion:    {config.companion_ip}:{config.companion_port}")
     print(f"  Notifications: {'ON' if config.notify_on_switch else 'OFF'}")
-    print(f"  Toggle devices: {len(config.toggle_devices) if config.toggle_devices else 'All'} included"
-          f"{', ' + str(len(config.exclude_devices)) + ' excluded' if config.exclude_devices else ''}")
+    print(
+        f"  Toggle devices: {len(config.toggle_devices) if config.toggle_devices else 'All'} included"
+        + f"{', ' + str(len(config.exclude_devices)) + ' excluded' if config.exclude_devices else ''}"
+    )
     print(f"  Per-app knobs: {'ON' if config.enable_app_knobs else 'OFF'}")
     if config.enable_app_knobs:
         print(f"  New app volume: {config.default_new_app_volume}%")
-        print(f"  Knob compaction: ON (apps shift left)")
+        print("  Knob compaction: ON (apps shift left)")
     print()
     print("  Run 'volume-monitor --start' to begin monitoring.")
     print("  Run 'volume-monitor --configure' to change settings.")
     print()
 
-        # Ask about starting/restarting
-    from .utils.process import is_running as check_running
-
-    if check_running():
+    # Ask about starting/restarting
+    if start_callback is not None:
         if _confirm("Volume Monitor is running. Restart to apply new settings?", default=True):
             print("\n  Restarting Volume Monitor...")
-            import time
-            from .cli import stop_monitor, start_daemon
-            stop_monitor()
-            time.sleep(0.5)
-            start_daemon(config)
+            start_callback(config)
             print("  ✓ Restarted with new settings.")
         else:
             print("\n  Settings saved. Changes will apply on next restart.")
@@ -460,13 +460,13 @@ def interactive_configure():
     else:
         if _confirm("Start Volume Monitor now?", default=True):
             print("\n  Starting Volume Monitor...")
-            from .cli import start_daemon
-            start_daemon(config)
+            print("  Start manually with: volume-monitor --start")
         else:
             print("\n  Start manually with: volume-monitor --start")
 
 
 # ─── Other utility functions ─────────────────────────────────────────
+
 
 def list_devices_command():
     """List all available audio devices with their IDs."""
@@ -478,17 +478,17 @@ def list_devices_command():
     print("=" * 50)
 
     for i, device in enumerate(devices):
-        current_marker = " (CURRENT)" if device['id'] == current_sink else ""
+        current_marker = " (CURRENT)" if device["id"] == current_sink else ""
 
         is_included = True
         if config.toggle_devices:
             is_included = any(
-                fnmatch.fnmatch(device['name'].lower(), pattern.lower())
+                fnmatch.fnmatch(device["name"].lower(), pattern.lower())
                 for pattern in config.toggle_devices
             )
         if is_included and config.exclude_devices:
             is_excluded = any(
-                fnmatch.fnmatch(device['name'].lower(), pattern.lower())
+                fnmatch.fnmatch(device["name"].lower(), pattern.lower())
                 for pattern in config.exclude_devices
             )
             if is_excluded:
@@ -528,6 +528,7 @@ def list_streams_command():
 
     if not streams:
         print("    (no app streams open)")
+        app_slots = {}
     else:
         app_slots = assign_knob_slots(streams, {})
         for knob in range(KNOB_APP_FIRST, KNOB_APP_LAST + 1):
@@ -536,24 +537,38 @@ def list_streams_command():
                 print(f"    Knob {knob}: (empty)")
                 continue
 
+            stream_id = str(s.get("id", ""))
             if s.get("volume") is None:
-                s["volume"], s["muted"] = get_stream_volume_retry(s["id"])
+                vol_result, muted_result = get_stream_volume_retry(stream_id)
+                s["volume"] = vol_result
+                s["muted"] = muted_result
 
             mute_str = " [MUTED]" if s.get("muted") else ""
-            vol_str = f" ({s['volume']}%)" if s.get("volume") is not None else ""
-            print(f"    Knob {knob}: {s['display_name']}{mute_str}{vol_str}  [stream {s['id']}]")
+            vol_val = s.get("volume")
+            vol_str = f" ({vol_val}%)" if vol_val is not None else ""
+            disp_name = str(s.get("display_name", ""))
+            print(f"    Knob {knob}: {disp_name}{mute_str}{vol_str}  [stream {stream_id}]")
 
-            media = s["props"].get("media.name")
-            if media:
-                print(f"              media: {media[:60]}")
+            props = s.get("props")
+            if isinstance(props, dict):
+                media = cast("dict[str, object]", props).get("media.name")
+                if media:
+                    print(f"              media: {str(media)[:60]}")
 
-    if streams:
-        assigned_keys = {app_slots[i]["dedupe_key"] for i in app_slots if app_slots.get(i)}
-        unassigned = [s for s in streams if s["dedupe_key"] not in assigned_keys]
+        assigned_keys: set[str] = set()
+        for i in app_slots:
+            slot_stream = app_slots.get(i)
+            if slot_stream is not None:
+                key = slot_stream.get("dedupe_key")
+                if key is not None:
+                    assigned_keys.add(str(key))
+        unassigned = [s for s in streams if str(s.get("dedupe_key", "")) not in assigned_keys]
         if unassigned:
             print("\n  Waiting for a free knob:")
             for s in unassigned:
-                print(f"    {s['display_name']}  [stream {s['id']}]")
+                disp_name = str(s.get("display_name", ""))
+                stream_id = str(s.get("id", ""))
+                print(f"    {disp_name}  [stream {stream_id}]")
 
     print(f"\nExcluded app patterns: {exclude}")
     print()
@@ -571,17 +586,17 @@ def update_device_list_command(action: str, pattern: str):
     """Update device filter lists in config."""
     config = MonitorConfig.load_or_default()
 
-    if action == 'include':
+    if action == "include":
         if pattern not in config.toggle_devices:
             config.toggle_devices.append(pattern)
-            config.save()
+            _ = config.save()
             print(f"Added '{pattern}' to include list")
         else:
             print(f"'{pattern}' is already in include list")
-    elif action == 'exclude':
+    elif action == "exclude":
         if pattern not in config.exclude_devices:
             config.exclude_devices.append(pattern)
-            config.save()
+            _ = config.save()
             print(f"Added '{pattern}' to exclude list")
         else:
             print(f"'{pattern}' is already in exclude list")
@@ -594,6 +609,6 @@ def reset_device_list_command():
     config = MonitorConfig.load_or_default()
     config.toggle_devices = []
     config.exclude_devices = []
-    config.save()
+    _ = config.save()
     print("All device filters cleared - will use all available devices")
     list_devices_command()

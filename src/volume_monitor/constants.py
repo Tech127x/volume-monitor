@@ -1,8 +1,7 @@
 """Application-wide constants and defaults."""
-from pathlib import Path
 
-# Version
-VERSION = "1.1.0"
+from pathlib import Path
+from typing import Any
 
 # File paths
 CONFIG_FILE = Path.home() / ".volume_monitor_config.json"
@@ -10,7 +9,7 @@ LOG_FILE = Path.home() / "volume_monitor.log"
 APP_VOLUME_CACHE_FILE = Path.home() / ".volume_monitor_app_volumes.json"
 
 # Default configuration
-DEFAULT_CONFIG = {
+DEFAULT_CONFIG: dict[str, Any] = {
     "companion_ip": "127.0.0.1",
     "companion_port": 16759,
     "device_id": "python_volume_monitor",
@@ -36,8 +35,8 @@ DEFAULT_CONFIG = {
     "app_knob_poll_interval": 0.1,
     # NEW: Safety features
     "default_new_app_volume": 50,  # Default volume for never-before-seen apps (0-100)
-    "stream_dedup_window": 2.0,     # Seconds to wait before showing duplicate streams
-    "enable_knob_compaction": True, # Move streams left when a knob frees up
+    "stream_dedup_window": 2.0,  # Seconds to wait before showing duplicate streams
+    "enable_knob_compaction": True,  # Move streams left when a knob frees up
 }
 
 # Browser ghost stream suppression (seconds)
@@ -68,16 +67,18 @@ STREAM_DEDUP_WINDOW = 2.0  # Seconds to suppress duplicate streams
 STREAM_DEDUP_SIMILARITY_THRESHOLD = 0.9  # How similar names must be to dedupe
 
 # Steam/game launcher binaries
-STEAM_LAUNCHER_BINARIES = frozenset({
-    "steam",
-    "steam.exe",
-    "reaper",
-    "gamescope",
-    "wine",
-    "wine64",
-    "wine64-preloader",
-    "wineserver",
-})
+STEAM_LAUNCHER_BINARIES = frozenset(
+    {
+        "steam",
+        "steam.exe",
+        "reaper",
+        "gamescope",
+        "wine",
+        "wine64",
+        "wine64-preloader",
+        "wineserver",
+    }
+)
 
 # Notification defaults
 DEFAULT_NOTIFICATION_TIMEOUT = 3000
