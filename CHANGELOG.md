@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.1.0] - 2024-01-XX
+## [1.1.0] - 2026-06-01
 
 ### Added
 - Package-based installation support
