@@ -158,18 +158,22 @@ def get_toggle_devices(config: Optional[MonitorConfig] = None) -> list[dict[str,
     return filtered
 
 
-def toggle_audio_device(config: Optional[MonitorConfig] = None) -> bool:
-    """Toggle to the next available audio output device."""
+def toggle_audio_device(config: Optional[MonitorConfig] = None) -> str | None:
+    """Toggle to the next available audio output device.
+
+    Returns:
+        The name of the newly activated device on success, or None on failure.
+    """
     devices = get_toggle_devices(config)
 
     if len(devices) < 2:
         logger.info("Need at least 2 audio devices to toggle")
-        return False
+        return None
 
     current_sink = get_current_sink_id()
     if not current_sink:
         logger.error("Could not determine current audio device")
-        return False
+        return None
 
     # Find current device index
     current_index = None
@@ -193,17 +197,19 @@ def toggle_audio_device(config: Optional[MonitorConfig] = None) -> bool:
             timeout=5,
         )
 
-        current_name = devices[current_index]["name"] if current_index >= 0 else "Unknown"
         next_name = next_device["name"]
-        logger.info(f"Toggled audio output: {current_name} -> {next_name}")
+        logger.info(
+            f"Toggled audio output: "
+            f"{devices[current_index]['name'] if current_index >= 0 else 'Unknown'} -> {next_name}"
+        )
 
         send_notification(
             "Audio Output Toggled",
             f"Switched to: {next_name}",
         )
 
-        return True
+        return next_name
 
     except Exception as e:
         logger.error(f"Failed to toggle audio device: {e}")
-        return False
+        return None

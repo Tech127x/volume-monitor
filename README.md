@@ -51,6 +51,13 @@ Bash / Zsh:
 ```
 That's it. The installer handles everything -- pipx setup, shell configuration, Fish completions, optional systemd service, and walks you through your first configuration.
 
+### Systemd Service (Auto-Start on Boot)
+
+  scripts/install-service.sh
+
+Installs a user-level systemd service that starts Volume Monitor automatically when you log in.
+View logs: journalctl --user -u volume-monitor -f
+
 ---
 
 ## 🎮 Usage -- So Simple You'll Forget It's Running
@@ -109,6 +116,12 @@ It walks you through:
 
 Config is stored at ~/.volume_monitor_config.json
 
+### Systemd Service (Optional)
+
+  bash scripts/install-service.sh
+
+Enables auto-start on login so Volume Monitor is always running.
+
 ---
 
 ## 🎛️ Stream Deck+ Variable Setup
@@ -154,8 +167,19 @@ Knobs 2-4 -- Per-App (optional):
 
   fish uninstall.fish
 
+## 📚 Documentation
+
+- [Configuration Guide](docs/CONFIGURATION.md) — All settings explained
+- [Usage Guide](docs/USAGE.md) — Commands and workflows
+- [Troubleshooting](docs/TROUBLESHOOTING.md) — Common issues and fixes
+- [CachyOS Fish Setup](docs/CACHYOS_FISH_SETUP.md) — Fish-specific install notes
+- [Companion Setup](docs/COMPANION_SETUP.md) — Variable setup for Stream Deck+
+- [Contributing](CONTRIBUTING.md) — How to help improve the project
+
 ## 📝 License
 
   MIT -- use it, modify it, share it... Just give credit!
 
-## Made with ❤️ for the CachyOS community, Bitfocus Companion users, and Stream Deck enthusiasts everywhere!
+---
+
+Made with ❤️ for the CachyOS community, Bitfocus Companion users, and Stream Deck enthusiasts everywhere!

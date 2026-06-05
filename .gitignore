@@ -4,6 +4,7 @@ __pycache__/
 .pytest_cache/
 htmlcov/
 .coverage
+.coverage.*
 dist/
 build/
 *.egg-info/
@@ -12,3 +13,7 @@ venv/
 *.log
 volume_monitor_config.json
 .pid
+*.swp
+*.swo
+*~
+.DS_Store

@@ -118,25 +118,24 @@ class TestEndToEnd:
 
     def test_volume_monitor_throttling(self, mock_client):
         """Test volume monitor's update throttling."""
-        import time
+        with patch("volume_monitor.monitors.volume.time.time", return_value=1000.0):
+            monitor = VolumeMonitor(
+                mock_client,
+                "vol_var",
+                "mute_var",
+                "dev_var",
+            )
 
-        monitor = VolumeMonitor(
-            mock_client,
-            "vol_var",
-            "mute_var",
-            "dev_var",
-        )
+            # First update should go through (last_t is 0, so window is open)
+            monitor.update_companion(50, False, "Test Device")
+            initial_calls = mock_client.update_variable.call_count
+            assert initial_calls > 0
 
-        # First update should go through
-        monitor.update_companion(50, False, "Test Device")
-        assert mock_client.update_variable.called
-        initial_calls = mock_client.update_variable.call_count
-
-        # Rapid subsequent updates within throttle window should be skipped
-        monitor.update_companion(60, False, "Test Device")
-        monitor.update_companion(70, False, "Test Device")
-        # No new calls because of rate limiting
-        assert mock_client.update_variable.call_count == initial_calls
+            # Now last_t is 1000.0, subsequent calls with same time are within 0.02s window
+            monitor.update_companion(60, False, "Test Device")
+            monitor.update_companion(70, False, "Test Device")
+            # No new calls because throttle window is still active
+            assert mock_client.update_variable.call_count == initial_calls
 
     def test_volume_monitor_same_state_skipped(self, mock_client):
         """Test that identical state doesn't trigger updates."""

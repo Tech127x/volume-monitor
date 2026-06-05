@@ -1,0 +1,15 @@
+[Unit]
+Description=Volume Monitor for BitFocus Companion
+Documentation=https://github.com/Tech127x/volume-monitor
+After=pipewire.service pipewire-pulse.service sound.target
+Wants=pipewire.service
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/volume-monitor --start-foreground
+Restart=on-failure
+RestartSec=5
+Environment=PATH=%h/.local/bin:/usr/bin:/bin
+
+[Install]
+WantedBy=default.target

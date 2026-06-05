@@ -7,24 +7,15 @@ echo "Installing Volume Monitor systemd service..."
 SERVICE_DIR="$HOME/.config/systemd/user"
 mkdir -p "$SERVICE_DIR"
 
-cat > "$SERVICE_DIR/volume-monitor.service" << 'EOF'
-[Unit]
-Description=Volume Monitor for BitFocus Companion
-After=pipewire.service pipewire-pulse.service
-Wants=pipewire.service
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cp "$SCRIPT_DIR/volume-monitor.service" "$SERVICE_DIR/volume-monitor.service"
 
-[Service]
-Type=simple
-ExecStart=volume-monitor --start-foreground
-Restart=on-failure
-RestartSec=5
-Environment="PATH=/usr/bin:/bin:/usr/sbin:/sbin"
+# Adjust the ExecStart path if volume-monitor is in PATH
+if ! command -v volume-monitor &>/dev/null; then
+    sed -i "s|%h/.local/bin/volume-monitor|$HOME/.local/bin/volume-monitor|g" "$SERVICE_DIR/volume-monitor.service"
+fi
 
-[Install]
-WantedBy=default.target
-EOF
-
-echo "Service file created at $SERVICE_DIR/volume-monitor.service"
+echo "Service file installed at $SERVICE_DIR/volume-monitor.service"
 
 # Reload systemd and enable service
 systemctl --user daemon-reload

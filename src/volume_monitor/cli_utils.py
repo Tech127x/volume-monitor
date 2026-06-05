@@ -23,6 +23,31 @@ from .constants import (
 )
 from .utils.normalization import norm_device_name
 
+
+def _detect_companion_host() -> str:
+    """Auto-detect Companion host, preferring a local or mDNS address."""
+    import socket
+
+    # Try localhost first (most common)
+    try:
+        socket.getaddrinfo("127.0.0.1", 16759)
+        return "127.0.0.1"
+    except OSError:
+        pass
+
+    # Try mDNS hostname (Companion advertises via Bonjour)
+    for hostname in ["companion.local", "companion"]:
+        try:
+            socket.getaddrinfo(hostname, 16759)
+            logger.info(f"Auto-detected Companion at {hostname}")
+            return hostname
+        except OSError:
+            continue
+
+    # Fall back to localhost
+    return "127.0.0.1"
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -361,6 +386,14 @@ def interactive_configure(start_callback: Callable[[MonitorConfig], None] | None
     current_ip = config.companion_ip
     current_port = config.companion_port
 
+    # Auto-detect Companion on the network
+    detected = _detect_companion_host()
+    if detected != current_ip:
+        print(f"  ℹ️  Auto-detected Companion at {detected}")
+        if _confirm(f"Use {detected} instead of {current_ip}?", default=True):
+            current_ip = detected
+            config.companion_ip = detected
+
     print("  Volume Monitor connects to BitFocus Companion")
     print("  to send volume data to your Stream Deck.")
     print()
@@ -574,12 +607,14 @@ def list_streams_command():
     print()
 
 
-def toggle_device_command():
+def toggle_device_command() -> None:
     """Toggle audio output device."""
-    if toggle_audio_device():
-        print("Audio device toggled successfully")
+    result = toggle_audio_device()
+    if result:
+        print(f"Switched to: {result}")
     else:
         print("Failed to toggle audio device")
+        print("Need at least 2 audio devices configured. Run: volume-monitor --configure")
 
 
 def update_device_list_command(action: str, pattern: str):

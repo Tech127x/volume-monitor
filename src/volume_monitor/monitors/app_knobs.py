@@ -52,6 +52,24 @@ from ..utils.threading_utils import start_daemon_thread
 logger = logging.getLogger(__name__)
 
 
+def _apply_default_volume_for_new_app_props(props: dict[str, object], pactl_id: str) -> None:
+    """Set a safe default volume for a newly seen app via its pactl sink-input.
+
+    Called from `_on_new_sink_input` to catch apps the moment they appear,
+    before PipeWire's default volume (often 100%) can be heard.
+    """
+    app_key = app_volume_cache_key({"props": props})
+    if not app_key:
+        return
+    cache = load_app_volume_cache()
+    if app_key not in cache:
+        default_vol = DEFAULT_NEW_APP_VOLUME
+        logger.info(f"New app via pactl: setting default volume to {default_vol}%")
+        _ = set_pactl_sink_input_volume_percent(pactl_id, default_vol)
+        cache[app_key] = default_vol
+        save_app_volume_cache(cache)
+
+
 class AppKnobMonitor(BaseMonitor):
     """Monitors per-app audio streams and maps them to Stream Deck+ knobs."""
 
@@ -501,7 +519,12 @@ class AppKnobMonitor(BaseMonitor):
             if not app_name or is_excluded_app(app_name, self.exclude_apps):
                 return
 
+            # Apply default volume for never-before-seen apps immediately
+            # This catches apps the moment they create a sink-input, before
+            # they can play audio at the PipeWire default (often 100%)
             _cache_props: dict[str, object] = dict(props)
+            _apply_default_volume_for_new_app_props(_cache_props, pactl_id)
+
             cached = get_persisted_volume_for_props(_cache_props)
             if cached is None or cached >= STREAM_VOLUME_RESTORE_HIGH:
                 return
