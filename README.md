@@ -107,12 +107,13 @@ Run the friendly interactive wizard:
   volume-monitor --configure
 
 It walks you through:
-  🔵 Bluetooth check — reminds you to connect devices before scanning
-  🔌 Companion connection — IP and port settings
-  🔔 Notifications — desktop alerts when devices switch
-  🔄 Toggle setup — pick which devices to cycle through
-  🎛️ App knobs — enable/disable, set default volume for new apps
-  📋 Companion variable guide — shows exactly which variables to create
+
+      🔵 Bluetooth check — reminds you to connect devices before scanning
+      🔌 Companion connection — IP and port settings
+      🔔 Notifications — desktop alerts when devices switch
+      🔄 Toggle setup — pick which devices to cycle through
+      🎛️ App knobs — enable/disable, set default volume for new apps
+      📋 Companion variable guide — shows exactly which variables to create
 
 Config is stored at ~/.volume_monitor_config.json
 
