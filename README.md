@@ -1,3 +1,5 @@
+*** This project is updated frequently and big changes were made 6/6/26 on how icons are handled! Much easier now. You can use icons in Image Library and even includes a module now to support pulling them from a local directory ***  
+
 # 🎛️ Volume Monitor for BitFocus Companion
 
 Real-time audio control at your fingertips -- finally, a volume knob that just works.
