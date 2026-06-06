@@ -126,7 +126,36 @@ Enables auto-start on login so Volume Monitor is always running.
 
 ## 🎛️ Stream Deck+ Variable Setup
 
-Create these Custom Variables in Companion:
+Volume Monitor pushes `knobX_label` variables to Companion. Use them to show
+app icons on your buttons automatically.
+
+### Method 1 (recommended) — Image Library
+
+No module needed. Use Companion's built-in Image Library and expressions:
+
+1. Upload app icons to Companion's **Image Library** (Connections → Image Library)
+2. Rename each icon's **name** field to match the app — e.g. `floorp`, `brave`, `spotify`
+3. On any Stream Deck+ button, create a **Local Variable**:
+   - Name: `app_name`
+   - Expression: `toLowerCase(replaceAll(split($(custom:knob2_label), ": ")[0], '"', ''))`
+4. In the button's **Style → Image** tab, set **Content > Image > expression** to:
+   ```
+   getVariable('image', $(local:app_name))
+   ```
+
+That's it. When Floorp plays audio, the button shows your Floorp icon. When
+Spotify plays, it shows the Spotify icon. Add one new icon to the library for
+each new app — no feedback rules, no regex, no module.
+
+### Method 2 — Companion Module
+
+A [Companion module](companion-module-volume-monitor/) is available that reads
+`knobX_label` variables and displays matching PNG files from a directory on
+disk. Useful if you prefer filesystem-based icons.
+
+### Custom Variables (for custom button layouts)
+
+Volume Monitor pushes these variables regardless of which method you use:
 
 Knob 1 -- Master:
   knob1_label, knob1_volume, knob1_dial_pct, knob1_muted, knob1_stream_id, knob1_active
