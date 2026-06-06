@@ -1,4 +1,6 @@
-*** This project is updated frequently and big changes were made 6/6/26 on how icons are handled! Much easier now. You can use icons in Image Library and even includes a module now to support pulling them from a local directory ***  
+## First a couple notes
+- This project is updated frequently and big changes were made 6/6/26 on how icons are handled! Much easier now. You can use icons in Image Library and even includes a module now to support pulling them from a local directory
+- Feedback is greatly appreciated!  Click discussions and let me know what you like, what you have trouble with, and suggest improvements!  THANKS!
 
 # 🎛️ Volume Monitor for BitFocus Companion
 
