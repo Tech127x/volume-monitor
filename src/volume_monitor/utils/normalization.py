@@ -65,10 +65,16 @@ def disambiguate_label(label: str, props: dict[str, str], used: set[str]) -> str
 
 
 def is_excluded_app(app_name: str, exclude_apps: list[str]) -> bool:
-    """Check if an app name matches any exclusion patterns."""
+    """Check if an app name matches any exclusion patterns.
+
+    An app is excluded when its normalised name *contains* one of the
+    exclude patterns as a substring.  (The reverse — pattern containing
+    the app name — would incorrectly exclude e.g. "chromium" just
+    because "chromium input" is in the exclude list.)
+    """
     n = normalize_name(app_name)
     for pattern in exclude_apps:
         p = normalize_name(pattern)
-        if p and (p in n or n in p):
+        if p and p in n:
             return True
     return False
