@@ -53,8 +53,9 @@ Bash / Zsh:
 That's it. The installer handles everything -- pipx setup, shell configuration, Fish completions, optional systemd service, and walks you through your first configuration.
 
 ### Systemd Service (Auto-Start on Boot)
-
+```
   scripts/install-service.sh
+```
 
 Installs a user-level systemd service that starts Volume Monitor automatically when you log in.
 View logs: journalctl --user -u volume-monitor -f
@@ -63,21 +64,22 @@ View logs: journalctl --user -u volume-monitor -f
 
 ## 🎮 Usage -- So Simple You'll Forget It's Running
 
-  volume-monitor --start          Start in background
-  volume-monitor --status         Check if running
-  volume-monitor --list-devices   See all your audio devices
-  volume-monitor --toggle         Switch to next audio device
-  volume-monitor --list-streams   See what apps are making sound
-  volume-monitor --configure      Change any setting interactively
+  volume-monitor --start          Start in background  
+  volume-monitor --status         Check if running  
+  volume-monitor --list-devices   See all your audio devices  
+  volume-monitor --toggle         Switch to next audio device  
+  volume-monitor --list-streams   See what apps are making sound  
+  volume-monitor --configure      Change any setting interactively  
 
-Fish Shell Aliases:
+  
+Fish Shell Aliases:  
 
-  vm     volume-monitor
-  vms    volume-monitor --status
-  vml    volume-monitor --list-devices
-  vmt    volume-monitor --toggle
-  vmc    volume-monitor --configure
-  vma    volume-monitor --list-streams
+  vm     volume-monitor  
+  vms    volume-monitor --status  
+  vml    volume-monitor --list-devices  
+  vmt    volume-monitor --toggle  
+  vmc    volume-monitor --configure  
+  vma    volume-monitor --list-streams  
 
 ---
 
@@ -104,9 +106,9 @@ Safe defaults: Brand new apps start at 50% volume. Never get startled by a surpr
 ## 🔧 Configuration
 
 Run the friendly interactive wizard:
-
+```
   volume-monitor --configure
-
+```
 It walks you through:  
   🔵 Bluetooth check — reminds you to connect devices before scanning  
   🔌 Companion connection — IP and port settings  
@@ -125,34 +127,94 @@ Enables auto-start on login so Volume Monitor is always running.
 
 ---
 
-## 🎛️ Stream Deck+ Variable Setup
+## 🎛️ Showing App Icons on Your Stream Deck+
 
-Volume Monitor pushes `knobX_label` variables to Companion. Use them to show
-app icons on your buttons automatically.
+Volume Monitor pushes `knob2_label`, `knob3_label`, and `knob4_label` custom
+variables to Companion — one per knob, each containing the name of the app
+currently assigned to that knob (e.g. `"Floorp: YouTube"`, `"Spotify"`).
+Use these to show dynamic app icons on your buttons.
 
 ### Method 1 (recommended) — Image Library
 
-No module needed. Use Companion's built-in Image Library and expressions:
+No module needed. Uses Companion's built-in Image Library.
 
-1. Upload app icons to Companion's **Image Library** (Connections → Image Library)
-2. Rename each icon's **name** field to match the app — e.g. `floorp`, `brave`, `spotify`
-3. On any Stream Deck+ button, create a **Local Variable**:
-   - Name: `app_name`
-   - Expression: `toLowerCase(replaceAll(split($(custom:knob2_label), ": ")[0], '"', ''))`
-4. In the button's **Style → Image** tab, set **Content > Image > expression** to:
+**Step 1 — Add icons to the library**
+
+1. Open Companion, go to **Connections → Image Library**
+2. Upload your app icons (PNG or SVG)
+3. For each icon, rename the **Name** field to match the app:
+   - Brave browser → `brave`
+   - Spotify → `spotify`
+   - Discord → `discord`
+   - Floorp → `floorp`
+   (The name must be lowercase, matching what Volume Monitor extracts from the knob label.)
+
+**Step 2 — Set up a knob button**
+
+On any Stream Deck+ button (e.g. the button above knob 2):
+
+1. Click **Style → Image** and enable the image field
+2. Set **Content > Image** to **Expression** mode
+3. Enter the expression:
    ```
-   getVariable('image', $(local:app_name))
+   toLowerCase(replaceAll(split($(custom:knob2_label), ": ")[0], '"', ''))
    ```
+   (Change `knob2` to `knob3` or `knob4` for other knobs.)
 
-That's it. When Floorp plays audio, the button shows your Floorp icon. When
-Spotify plays, it shows the Spotify icon. Add one new icon to the library for
-each new app — no feedback rules, no regex, no module.
+That's it. Companion will look up an image in the library whose name matches
+the expression result. When Floorp plays audio, it shows the `floorp` icon.
+When Spotify plays, the `spotify` icon. Add one icon to the library per app
+— no feedback rules, no module, no regex configuration.
 
-### Method 2 — Companion Module
+### Method 2 — Companion Module (filesystem icons)
 
-A [Companion module](companion-module-volume-monitor/) is available that reads
-`knobX_label` variables and displays matching PNG files from a directory on
-disk. Useful if you prefer filesystem-based icons.
+For users who prefer to manage icon PNG files on disk instead of using the
+Image Library. Requires the [companion module](companion-module-volume-monitor/).
+
+**Step 1 — Install the module**
+
+```bash
+cp -r companion-module-volume-monitor ~/.config/companion/v5.0/modules/
+cd ~/.config/companion/v5.0/modules/companion-module-volume-monitor
+npm install --omit=dev
+```
+
+Then create the icon path config:
+
+```bash
+echo '{"path": "'$HOME'/.volume-monitor-icons"}' > ~/.config/companion/volume-monitor-icons-path.json
+```
+
+**Step 2 — Add icons**
+
+Drop PNG files into `~/.volume-monitor-icons/`, named after each app.
+The name must be lowercase, matching what Volume Monitor extracts from
+the knob label:
+
+```
+~/.volume-monitor-icons/
+├── brave.png
+├── discord.png
+├── floorp.png
+├── spotify.png
+└── ...
+```
+
+The directory is created automatically if it doesn't exist.
+
+**Step 3 — Add the feedback to a button**
+
+1. In Companion, add the **Volume Monitor** connection instance
+2. On any button, click **Feedback → +**
+3. Find the **Volume Monitor** section and select **Show app icon for Knob 2**
+   (or Knob 3, or Knob 4)
+
+The module reads `$(custom:knobX_label)`, extracts the app name, and displays
+the matching PNG. Unknown apps fall back to a generic icon.
+
+### Custom Variables (for reference)
+
+Volume Monitor pushes these raw variables regardless of which method you use:
 
 ### Custom Variables (for custom button layouts)
 
@@ -178,20 +240,21 @@ Knobs 2-4 -- Per-App (optional):
 
 ## 🆘 Troubleshooting
 
-  No devices: systemctl --user status pipewire
-  Companion won't connect: Check TCP API on port 16759
-  Volume not updating: volume-monitor --start-foreground --debug
-  Command not found (Fish): fish_add_path ~/.local/bin
+  No devices: systemctl --user status pipewire  
+  Companion won't connect: Check TCP API on port 16759  
+  Volume not updating: volume-monitor --start-foreground --debug  
+  Command not found (Fish): fish_add_path ~/.local/bin  
   Command not found (Bash): export PATH="$HOME/.local/bin:$PATH"
 
 ---
 
 ## 📦 Updating
-
+```
   cd ~/volume-monitor
   git pull
   pipx install --force --editable .
   volume-monitor --start
+```
 
 ## 🗑️ Uninstall
 
