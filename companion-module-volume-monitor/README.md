@@ -7,9 +7,10 @@ Display per-app icons on your Stream Deck+ based on Volume Monitor's knob labels
 No module needed — pure Companion. For each knob button:
 
 1. Upload icons to Companion's **Image Library** and rename each one's **name** field to match the app (e.g. `floorp`, `brave`, `spotify`)
-2. On the button, add a **Local Variable**:
-   - Name: `app_name`
-   - Expression: `toLowerCase(replaceAll(split($(custom:knob2_label), ": ")[0], '"', ''))`
+2. On the button, add a **Local Variable**:  
+   - Local variable type: `internal:evaluate expression`
+   - Name: `app_name`  
+   - Expression: `toLowerCase(replaceAll(split($(custom:knob2_label), ": ")[0], '"', ''))`  
 3. In the button's **Style → Image** tab, set **Content > Image > expression** to:
    ```
    getVariable('image', $(local:app_name))
