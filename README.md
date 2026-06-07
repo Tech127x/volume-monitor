@@ -159,6 +159,7 @@ On any Stream Deck+ button (e.g. the button above knob 2):
    getVariable('image', $(local:app_name))
    ```
 3. Go to **Local Variables** (button's Variables tab) and add a new entry:
+   - **Local variable type:** `internal:evaluate expression`
    - **Variable name:** `app_name`
    - **Expression:** `toLowerCase(replaceAll(split($(custom:knob2_label), ": ")[0], '"', ''))`
 
