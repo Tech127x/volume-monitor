@@ -151,6 +151,7 @@ No module needed. Uses Companion's built-in Image Library.
 
 ![Volume Monitor on Stream Deck+](docs/images/screenshot_4.png)
 
+
 **Step 2 — Set up a knob button**
 
 On any Stream Deck+ button (e.g. the button above knob 2):
@@ -163,6 +164,8 @@ On any Stream Deck+ button (e.g. the button above knob 2):
 
 ![Volume Monitor on Stream Deck+](docs/images/screenshot_2.png)
 
+
+
 3. Go to **Local Variables** (button's Variables tab) and add a new entry:
    - **Local variable type:** `internal:evaluate expression`
    - **Variable name:** `app_name`
@@ -170,7 +173,9 @@ On any Stream Deck+ button (e.g. the button above knob 2):
 
    (Change `knob2` to `knob3` or `knob4` for other knobs.)
 
+
 ![Volume Monitor on Stream Deck+](docs/images/screenshot_3.png)
+
 
 That's it. Companion evaluates the local variable first to extract the app
 name from Volume Monitor's knob label, then looks up an image in the library
