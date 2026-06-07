@@ -1,8 +1,5 @@
-## First a couple notes
-- This project is updated frequently and big changes were made 6/6/26 to how icons are handled! Much easier now. You can use icons in Image Library and even includes a module now to support pulling them from a local directory
-- Feedback is greatly appreciated!  Click discussions and let me know what you like, what you have trouble with, and suggest improvements!  THANKS!
-
 # 🎛️ Volume Monitor for BitFocus Companion
+![Volume Monitor on Stream Deck+](docs/images/screenshot_1.png)
 
 Real-time audio control at your fingertips -- finally, a volume knob that just works.
 
@@ -111,13 +108,12 @@ Run the friendly interactive wizard:
   volume-monitor --configure
 
 It walks you through:
-
-      🔵 Bluetooth check — reminds you to connect devices before scanning
-      🔌 Companion connection — IP and port settings
-      🔔 Notifications — desktop alerts when devices switch
-      🔄 Toggle setup — pick which devices to cycle through
-      🎛️ App knobs — enable/disable, set default volume for new apps
-      📋 Companion variable guide — shows exactly which variables to create
+  🔵 Bluetooth check — reminds you to connect devices before scanning
+  🔌 Companion connection — IP and port settings
+  🔔 Notifications — desktop alerts when devices switch
+  🔄 Toggle setup — pick which devices to cycle through
+  🎛️ App knobs — enable/disable, set default volume for new apps
+  📋 Companion variable guide — shows exactly which variables to create
 
 Config is stored at ~/.volume_monitor_config.json
 
@@ -228,4 +224,3 @@ If you find this project useful, consider supporting my work. Thanks!
 THIS SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **Use at your own risk.** This software interacts directly with system hardware. Please ensure you understand the implications of monitoring and potentially controlling hardware sensors. The author assumes no responsibility for any damage or data loss.
-
