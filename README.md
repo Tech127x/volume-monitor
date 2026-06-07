@@ -153,16 +153,20 @@ No module needed. Uses Companion's built-in Image Library.
 
 On any Stream Deck+ button (e.g. the button above knob 2):
 
-1. Click **Style → Image** and enable the image field
-2. Set **Content > Image** to **Expression** mode
-3. Enter the expression:
+1. Click **Style → Image** and enable the image field if not already present
+2. Set **Content > Image** to **Expression** mode and enter:
    ```
-   toLowerCase(replaceAll(split($(custom:knob2_label), ": ")[0], '"', ''))
+   getVariable('image', $(local:app_name))
    ```
+3. Go to **Local Variables** (button's Variables tab) and add a new entry:
+   - **Variable name:** `app_name`
+   - **Expression:** `toLowerCase(replaceAll(split($(custom:knob2_label), ": ")[0], '"', ''))`
+
    (Change `knob2` to `knob3` or `knob4` for other knobs.)
 
-That's it. Companion will look up an image in the library whose name matches
-the expression result. When Floorp plays audio, it shows the `floorp` icon.
+That's it. Companion evaluates the local variable first to extract the app
+name from Volume Monitor's knob label, then looks up an image in the library
+whose name matches. When Floorp plays audio, it shows the `floorp` icon.
 When Spotify plays, the `spotify` icon. Add one icon to the library per app
 — no feedback rules, no module, no regex configuration.
 
