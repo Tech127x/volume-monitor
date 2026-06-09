@@ -1,4 +1,7 @@
 #!/bin/bash
+
+# Volume Monitor — https://github.com/Tech127x/volume-monitor
+# Copyright (c) 2025 Tech127x
 # Install Volume Monitor as a systemd user service
 set -e
 

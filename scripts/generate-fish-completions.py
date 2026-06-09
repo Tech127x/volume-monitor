@@ -1,3 +1,6 @@
+# Volume Monitor — https://github.com/Tech127x/volume-monitor
+# Copyright (c) 2025 Tech127x
+
 #!/usr/bin/env python3
 """Generate Fish shell completions for volume-monitor dynamically."""
 import sys

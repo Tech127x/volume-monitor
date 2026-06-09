@@ -1,4 +1,6 @@
 """Tests for PipeWire interaction functions."""
+# Volume Monitor — https://github.com/Tech127x/volume-monitor
+# Copyright (c) 2025 Tech127x
 
 from volume_monitor.audio.pipewire import (
     clamp_volume_percent,

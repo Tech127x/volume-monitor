@@ -1,3 +1,5 @@
+# Volume Monitor — https://github.com/Tech127x/volume-monitor
+# Copyright (c) 2025 Tech127x
 .PHONY: install test test-quick test-pipx test-all lint format clean build release dev-refresh dev-restart dev-stop dev-start update help
 
 # Default target

@@ -1,4 +1,6 @@
 """Application-wide constants and defaults."""
+# Volume Monitor — https://github.com/Tech127x/volume-monitor
+# Copyright (c) 2025 Tech127x
 
 from pathlib import Path
 from typing import Any

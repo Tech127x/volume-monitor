@@ -1,4 +1,7 @@
 #!/bin/bash
+
+# Volume Monitor — https://github.com/Tech127x/volume-monitor
+# Copyright (c) 2025 Tech127x
 # Test script for pipx-installed Volume Monitor
 # This simulates the exact user experience
 

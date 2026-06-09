@@ -1,4 +1,7 @@
 #!/usr/bin/env fish
+
+# Volume Monitor — https://github.com/Tech127x/volume-monitor
+# Copyright (c) 2025 Tech127x
 # Setup Fish shell integration for Volume Monitor
 # Run this after installation to set up aliases, completions, and prompt
 

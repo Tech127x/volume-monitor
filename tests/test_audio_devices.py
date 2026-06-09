@@ -1,4 +1,7 @@
 """Tests for audio device management."""
+# Volume Monitor — https://github.com/Tech127x/volume-monitor
+# Copyright (c) 2025 Tech127x
+
 from volume_monitor.audio.devices import filter_devices
 
 

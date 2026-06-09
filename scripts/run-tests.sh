@@ -1,4 +1,7 @@
 #!/bin/bash
+
+# Volume Monitor — https://github.com/Tech127x/volume-monitor
+# Copyright (c) 2025 Tech127x
 # Master test runner for Volume Monitor
 # Run this before releasing
 

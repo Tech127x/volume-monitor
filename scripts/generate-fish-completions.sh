@@ -1,4 +1,7 @@
 #!/bin/bash
+
+# Volume Monitor — https://github.com/Tech127x/volume-monitor
+# Copyright (c) 2025 Tech127x
 # Generate Fish shell completions from argparse
 
 # This script extracts the argument parser and generates fish completions

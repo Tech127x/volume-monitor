@@ -1,3 +1,5 @@
+# Volume Monitor — https://github.com/Tech127x/volume-monitor
+# Copyright (c) 2025 Tech127x
 # Fish Prompt Integration for Volume Monitor
 # Add this to your fish_prompt or fish_right_prompt function
 # Location: ~/.config/fish/functions/fish_prompt.fish

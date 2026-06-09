@@ -1,4 +1,6 @@
 """Tests for name normalization utilities."""
+# Volume Monitor — https://github.com/Tech127x/volume-monitor
+# Copyright (c) 2025 Tech127x
 
 from volume_monitor.utils.normalization import (
     disambiguate_label,

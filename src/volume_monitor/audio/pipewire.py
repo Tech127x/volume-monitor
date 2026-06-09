@@ -1,4 +1,6 @@
 """PipeWire/wpctl interaction functions."""
+# Volume Monitor — https://github.com/Tech127x/volume-monitor
+# Copyright (c) 2025 Tech127x
 
 import logging
 import re

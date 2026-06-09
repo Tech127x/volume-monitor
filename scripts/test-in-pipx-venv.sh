@@ -1,4 +1,7 @@
 #!/bin/bash
+
+# Volume Monitor — https://github.com/Tech127x/volume-monitor
+# Copyright (c) 2025 Tech127x
 # Run tests inside the pipx virtual environment
 # This ensures the package works correctly when installed via pipx
 

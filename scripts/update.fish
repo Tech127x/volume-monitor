@@ -1,4 +1,7 @@
 #!/usr/bin/env fish
+
+# Volume Monitor — https://github.com/Tech127x/volume-monitor
+# Copyright (c) 2025 Tech127x
 # Volume Monitor Update Script (Fish)
 # Use this to update an existing installation
 

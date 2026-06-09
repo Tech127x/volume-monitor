@@ -1,3 +1,5 @@
+# Volume Monitor — https://github.com/Tech127x/volume-monitor
+# Copyright (c) 2025 Tech127x
 # Volume Monitor Fish Shell Configuration
 # Add to ~/.config/fish/config.fish or source from there
 

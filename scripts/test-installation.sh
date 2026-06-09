@@ -1,4 +1,7 @@
 #!/bin/bash
+
+# Volume Monitor — https://github.com/Tech127x/volume-monitor
+# Copyright (c) 2025 Tech127x
 # Comprehensive installation test script for Volume Monitor
 # Simulates a user downloading and installing from scratch
 

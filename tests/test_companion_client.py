@@ -1,4 +1,7 @@
 """Tests for Companion TCP client."""
+# Volume Monitor — https://github.com/Tech127x/volume-monitor
+# Copyright (c) 2025 Tech127x
+
 from unittest.mock import Mock, patch, MagicMock
 
 from volume_monitor.companion.client import CompanionTCPClient
