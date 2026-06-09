@@ -1,6 +1,7 @@
 """Threading utility functions."""
-# Volume Monitor — https://github.com/Tech127x/volume-monitor
-# Copyright (c) 2025 Tech127x
+# Volume Monitor - Volume monitor for Bitfocus Companion
+# Created by Tech127x (https://github.com/tech127x)
+# Repository: https://github.com/tech127x/volume-monitor
 
 import threading
 
