@@ -96,13 +96,32 @@ def _check_latest_version() -> str | None:
     return f"{GREEN}Up to date (v{__version__}){RESET}"
 
 
+class _HelpWithVersion(argparse.Action):
+    """Custom help action that includes the version check."""
+
+    def __init__(
+        self, option_strings, dest=argparse.SUPPRESS, help="show this help message and exit"
+    ):
+        super().__init__(option_strings, dest=dest, help=help, nargs=0)
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        vs = _check_latest_version()
+        if vs:
+            parser.description = f"{parser.description} \u2192 {vs}"
+        parser.print_help()
+        parser.exit()
+
+
 def create_parser() -> argparse.ArgumentParser:
     """Create the argument parser."""
     parser = argparse.ArgumentParser(
         prog="volume-monitor",
         description=f"BitFocus Companion Volume & Device Monitor v{__version__}",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        add_help=True,
+        add_help=False,
+    )
+    parser.add_argument(
+        "-h", "--help", action=_HelpWithVersion, help="show this help message and exit"
     )
 
     parser.add_argument(
@@ -431,6 +450,10 @@ def main() -> None:
     parser = create_parser()
 
     if len(sys.argv) == 1:
+        # Inline version check on the description line
+        vs = _check_latest_version()
+        if vs:
+            parser.description = f"{parser.description} \u2192 {vs}"
         parser.print_help(sys.stderr)
 
         # Show shell-specific quick start
@@ -448,10 +471,6 @@ def main() -> None:
             print("  volume-monitor --configure   # First-time setup")
 
         print("  volume-monitor --help        # Show all options")
-        print()
-        status = _check_latest_version()
-        if status:
-            print(f"  {status}")
         print()
         sys.exit(0)
 
