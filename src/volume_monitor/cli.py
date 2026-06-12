@@ -83,10 +83,12 @@ def _check_latest_version() -> str | None:
             key=lambda v: [int(x) for x in v.split(".")],
             default=None,
         )
-        if not latest:
-            return None
     except Exception:
         return None
+
+    if not latest:
+        # No tags exist yet — current version is the latest
+        return f"{GREEN}Up to date (v{__version__}){RESET}"
 
     current_parts = [int(x) for x in __version__.split(".")]
     latest_parts = [int(x) for x in latest.split(".")]
