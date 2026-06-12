@@ -62,15 +62,6 @@ def create_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="volume-monitor",
         description=f"BitFocus Companion Volume & Device Monitor v{__version__}",
-        epilog=(
-            "Examples:\n"
-            "  volume-monitor --start              # Start in background\n"
-            "  volume-monitor --start-foreground    # Start in foreground\n"
-            "  volume-monitor --status              # Check if running\n"
-            "  volume-monitor --configure           # Interactive setup\n"
-            "  volume-monitor --list-devices        # List audio devices\n"
-            "  volume-monitor --toggle              # Switch audio device"
-        ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
         add_help=True,
     )
