@@ -5,6 +5,7 @@
 
 import argparse
 import atexit
+import json
 import logging
 import os
 import signal
@@ -55,6 +56,44 @@ def get_pipx_environment() -> dict[str, str]:
         env["SHELL"] = os.environ.get("SHELL", "/usr/bin/fish")
 
     return env
+
+
+def _check_latest_version() -> str | None:
+    """Check GitHub for a newer release.  Returns an ANSI-coloured status
+    string, or None if the check fails (network error, rate-limited, etc.)."""
+    import urllib.request
+
+    GREEN = "\033[92m"
+    ORANGE = "\033[93m"
+    RESET = "\033[0m"
+
+    try:
+        req = urllib.request.Request(
+            "https://api.github.com/repos/Tech127x/volume-monitor/tags",
+            headers={"Accept": "application/json", "User-Agent": "volume-monitor/1.0"},
+        )
+        with urllib.request.urlopen(req, timeout=2) as resp:
+            tags = json.loads(resp.read().decode())
+        latest = max(
+            (
+                t["name"].lstrip("v")
+                for t in tags
+                if t["name"].lstrip("v").replace(".", "").isdigit()
+            ),
+            key=lambda v: [int(x) for x in v.split(".")],
+            default=None,
+        )
+        if not latest:
+            return None
+    except Exception:
+        return None
+
+    current_parts = [int(x) for x in __version__.split(".")]
+    latest_parts = [int(x) for x in latest.split(".")]
+
+    if latest_parts > current_parts:
+        return f"{ORANGE}Update available: v{latest}{RESET}"
+    return f"{GREEN}Up to date (v{__version__}){RESET}"
 
 
 def create_parser() -> argparse.ArgumentParser:
@@ -409,6 +448,11 @@ def main() -> None:
             print("  volume-monitor --configure   # First-time setup")
 
         print("  volume-monitor --help        # Show all options")
+        print()
+        status = _check_latest_version()
+        if status:
+            print(f"  {status}")
+        print()
         sys.exit(0)
 
     args = parser.parse_args()
