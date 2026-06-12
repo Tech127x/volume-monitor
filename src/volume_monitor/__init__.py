@@ -9,7 +9,7 @@ from .config import MonitorConfig
 from .monitors.app_knobs import AppKnobMonitor
 from .monitors.volume import VolumeMonitor
 
-__version__ = "1.0.0"
+__version__ = "1.0.34"
 __author__ = "Tech127x"
 __license__ = "MIT"
 
