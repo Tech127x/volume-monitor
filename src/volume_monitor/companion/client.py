@@ -27,6 +27,7 @@ class CompanionTCPClient:
     def connect(self, max_wait: float = 5.0) -> bool:
         """Connect to Companion with retry logic."""
         start = time.time()
+        attempt = 0
 
         while not self.connected.is_set():
             if time.time() - start > max_wait:
@@ -41,7 +42,6 @@ class CompanionTCPClient:
                     self.sock.settimeout(None)
                     self.connected.set()
 
-                    # Register device
                     self._send(
                         f"ADD-DEVICE DEVICEID={self.device_id} "
                         f'PRODUCT_NAME="Python Volume Monitor"\n'
@@ -51,9 +51,17 @@ class CompanionTCPClient:
                 return True
 
             except Exception as e:
-                logger.warning(f"Connection failed: {e}. Retrying...")
+                attempt += 1
+                # Suppress repeated warnings after first few attempts
+                if attempt <= 3:
+                    logger.warning(f"Connection attempt {attempt} failed: {e}")
+                elif attempt == 4:
+                    logger.warning(
+                        f"Still unable to connect after {attempt} attempts — "
+                        f"is Companion running with TCP API enabled on port {self.port}?"
+                    )
                 self.disconnect()
-                time.sleep(1)
+                time.sleep(min(1 + attempt, 10))
 
         return True
 

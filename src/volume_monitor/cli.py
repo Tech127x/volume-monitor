@@ -413,6 +413,29 @@ def check_status() -> None:
         except Exception:
             pass
 
+        # Quick Companion connectivity check
+        try:
+            import socket
+
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.settimeout(2)
+            from .config import MonitorConfig
+
+            cfg = MonitorConfig.load_or_default()
+            sock.connect((cfg.companion_ip, cfg.companion_port))
+            sock.close()
+            logger.info(f"Companion: connected ({cfg.companion_ip}:{cfg.companion_port})")
+        except socket.timeout:
+            from .config import MonitorConfig
+
+            cfg = MonitorConfig.load_or_default()
+            logger.warning(
+                f"Companion: NOT REACHABLE at {cfg.companion_ip}:{cfg.companion_port} — "
+                f"TCP API may be disabled"
+            )
+        except Exception:
+            pass
+
         logger.info(f"Shell: {shell}")
         logger.info("Log file: ~/volume_monitor.log")
         logger.info("Config file: ~/.volume_monitor_config.json")
