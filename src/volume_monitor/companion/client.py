@@ -1,8 +1,4 @@
 """TCP client for BitFocus Companion API."""
-# Volume Monitor - Volume monitor for Bitfocus Companion
-# Created by Tech127x (https://github.com/tech127x)
-# Repository: https://github.com/tech127x/volume-monitor
-
 import contextlib
 import logging
 import socket
@@ -52,7 +48,6 @@ class CompanionTCPClient:
 
             except Exception as e:
                 attempt += 1
-                # Suppress repeated warnings after first few attempts
                 if attempt <= 3:
                     logger.warning(f"Connection attempt {attempt} failed: {e}")
                 elif attempt == 4:
