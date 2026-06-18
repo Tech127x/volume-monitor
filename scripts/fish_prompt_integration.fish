@@ -1,6 +1,5 @@
-# Volume Monitor - Volume monitor for Bitfocus Companion
-# Created by Tech127x (https://github.com/tech127x)
-# Repository: https://github.com/tech127x/volume-monitor
+# Volume Monitor — https://github.com/Tech127x/volume-monitor
+# Copyright (c) 2025 Tech127x
 # Fish Prompt Integration for Volume Monitor
 # Add this to your fish_prompt or fish_right_prompt function
 # Location: ~/.config/fish/functions/fish_prompt.fish

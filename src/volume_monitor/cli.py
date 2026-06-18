@@ -1,11 +1,9 @@
 """Command-line interface for Volume Monitor."""
-# Volume Monitor - Volume monitor for Bitfocus Companion
-# Created by Tech127x (https://github.com/tech127x)
-# Repository: https://github.com/tech127x/volume-monitor
+# Volume Monitor — https://github.com/Tech127x/volume-monitor
+# Copyright (c) 2025 Tech127x
 
 import argparse
 import atexit
-import json
 import logging
 import os
 import signal
@@ -58,72 +56,22 @@ def get_pipx_environment() -> dict[str, str]:
     return env
 
 
-def _check_latest_version() -> str | None:
-    """Check GitHub for a newer release.  Returns an ANSI-coloured status
-    string, or None if the check fails (network error, rate-limited, etc.)."""
-    import urllib.request
-
-    GREEN = "\033[92m"
-    ORANGE = "\033[93m"
-    RESET = "\033[0m"
-
-    try:
-        req = urllib.request.Request(
-            "https://api.github.com/repos/Tech127x/volume-monitor/tags",
-            headers={"Accept": "application/json", "User-Agent": "volume-monitor/1.0"},
-        )
-        with urllib.request.urlopen(req, timeout=2) as resp:
-            tags = json.loads(resp.read().decode())
-        latest = max(
-            (
-                t["name"].lstrip("v")
-                for t in tags
-                if t["name"].lstrip("v").replace(".", "").isdigit()
-            ),
-            key=lambda v: [int(x) for x in v.split(".")],
-            default=None,
-        )
-    except Exception:
-        return None
-
-    if not latest:
-        # No tags exist yet — current version is the latest
-        return f"{GREEN}Up to date (v{__version__}){RESET}"
-
-    current_parts = [int(x) for x in __version__.split(".")]
-    latest_parts = [int(x) for x in latest.split(".")]
-
-    if latest_parts > current_parts:
-        return f"{ORANGE}Update available: v{latest}{RESET}"
-    return f"{GREEN}Up to date (v{__version__}){RESET}"
-
-
-class _HelpWithVersion(argparse.Action):
-    """Custom help action that includes the version check."""
-
-    def __init__(
-        self, option_strings, dest=argparse.SUPPRESS, help="show this help message and exit"
-    ):
-        super().__init__(option_strings, dest=dest, help=help, nargs=0)
-
-    def __call__(self, parser, namespace, values, option_string=None):
-        vs = _check_latest_version()
-        if vs:
-            parser.description = f"{parser.description} \u2192 {vs}"
-        parser.print_help()
-        parser.exit()
-
-
 def create_parser() -> argparse.ArgumentParser:
     """Create the argument parser."""
     parser = argparse.ArgumentParser(
         prog="volume-monitor",
         description=f"BitFocus Companion Volume & Device Monitor v{__version__}",
+        epilog=(
+            "Examples:\n"
+            "  volume-monitor --start              # Start in background\n"
+            "  volume-monitor --start-foreground    # Start in foreground\n"
+            "  volume-monitor --status              # Check if running\n"
+            "  volume-monitor --configure           # Interactive setup\n"
+            "  volume-monitor --list-devices        # List audio devices\n"
+            "  volume-monitor --toggle              # Switch audio device"
+        ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        add_help=False,
-    )
-    parser.add_argument(
-        "-h", "--help", action=_HelpWithVersion, help="show this help message and exit"
+        add_help=True,
     )
 
     parser.add_argument(
@@ -475,10 +423,6 @@ def main() -> None:
     parser = create_parser()
 
     if len(sys.argv) == 1:
-        # Inline version check on the description line
-        vs = _check_latest_version()
-        if vs:
-            parser.description = f"{parser.description} \u2192 {vs}"
         parser.print_help(sys.stderr)
 
         # Show shell-specific quick start
@@ -496,7 +440,6 @@ def main() -> None:
             print("  volume-monitor --configure   # First-time setup")
 
         print("  volume-monitor --help        # Show all options")
-        print()
         sys.exit(0)
 
     args = parser.parse_args()

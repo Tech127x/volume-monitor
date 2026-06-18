@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Add credit to all non-.md source files that don't have it yet."""
+
 import os
 
 AUTHOR = "Tech127x"
@@ -7,15 +8,14 @@ URL = "https://github.com/Tech127x/volume-monitor"
 PY_CREDIT = f"# Volume Monitor — {URL}\n# Copyright (c) 2025 {AUTHOR}\n\n"
 SH_CREDIT = f"# Volume Monitor — {URL}\n# Copyright (c) 2025 {AUTHOR}\n"
 
-SKIP = {".git", "__pycache__", "node_modules"}
-ALREADY = {"__init__.py", "conftest.py", "setup.py"}
+ALREADY_HAS = {"__init__.py", "conftest.py", "setup.py"}
 
 for root, dirs, files in os.walk("."):
     parts = root.split(os.sep)
-    if any(x in SKIP for x in parts):
+    if any(x in parts for x in (".git", "__pycache__", "node_modules")):
         continue
     for f in files:
-        if f.endswith((".md", ".svg")):
+        if f.endswith(".md") or f.endswith(".svg"):
             continue
         path = os.path.join(root, f)
         try:
@@ -26,7 +26,7 @@ for root, dirs, files in os.walk("."):
         if "Tech127x" in content:
             continue
         if f.endswith(".py"):
-            if f in ALREADY:
+            if f in ALREADY_HAS:
                 continue
             if content.startswith('"""'):
                 idx = content.index('"""') + 3
@@ -53,4 +53,3 @@ for root, dirs, files in os.walk("."):
         with open(path, "w") as fh:
             fh.write(content)
         print(path)
-
