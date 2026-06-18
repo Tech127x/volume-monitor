@@ -1,26 +1,27 @@
 {
-    "id": "volume-monitor",
-    "name": "volume-monitor",
-    "shortname": "VolumeMon",
-    "description": "Display app icons on your Stream Deck+ from Volume Monitor's per-app knobs",
-    "version": "1.0.0",
-    "manufacturer": "Tech127x",
-    "products": ["Volume Monitor"],
-    "license": "MIT",
-    "keywords": ["audio", "volume", "pipewire", "streamdeck"],
-    "legacyIds": [],
-    "repository": "https://github.com/Tech127x/volume-monitor.git",
-    "bugs": "https://github.com/Tech127x/volume-monitor/issues",
-    "maintainers": [
-        {
-            "name": "Tech127x",
-            "email": "tech127x@users.noreply.github.com"
-        }
-    ],
-    "runtime": {
-        "type": "node22",
-        "api": "nodejs-ipc",
-        "apiVersion": "1.0.0",
-        "entrypoint": "../index.js"
-    }
+	"type": "connection",
+	"id": "volume-monitor",
+	"name": "volume-monitor",
+	"shortname": "VolumeMon",
+	"description": "Display app icons on your Stream Deck+ from Volume Monitor's per-app knobs",
+	"version": "1.0.0",
+	"manufacturer": "Tech127x",
+	"products": ["Volume Monitor"],
+	"license": "MIT",
+	"keywords": ["audio", "volume", "pipewire", "streamdeck"],
+	"legacyIds": [],
+	"repository": "https://github.com/Tech127x/volume-monitor.git",
+	"bugs": "https://github.com/Tech127x/volume-monitor/issues",
+	"maintainers": [
+		{
+			"name": "Tech127x",
+			"email": "tech127x@users.noreply.github.com"
+		}
+	],
+	"runtime": {
+		"type": "node22",
+		"api": "nodejs-ipc",
+		"apiVersion": "2.0.0",
+		"entrypoint": "../index.js"
+	}
 }

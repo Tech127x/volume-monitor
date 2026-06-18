@@ -19,3 +19,5 @@ volume_monitor_config.json
 *.swo
 *~
 .DS_Store
+node_modules/
+package-lock.json
