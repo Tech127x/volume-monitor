@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "volume-monitor"
-version = "1.0.40"
+version = "1.0.42"
 description = "BitFocus Companion Volume & Device Monitor for PipeWire"
 readme = "README.md"
 license = {text = "MIT"}
@@ -39,7 +39,7 @@ dev = [
     "pytest-asyncio>=0.21",
     "pytest-mock>=3.10",
     "black>=23.0",
-    "ruff>=0.1.7",
+    "ruff>=0.1.9",
     "mypy>=1.0",
     "pre-commit>=3.0",
 ]
